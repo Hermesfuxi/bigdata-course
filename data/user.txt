@@ -1,0 +1,7 @@
+{"name": "laoduan", "age": 30, "fv": 99.99}
+{"name": "nianhang", "age": 28, "fv": 9.99}
+{"name": "laohu", "age": 18, "fv": 80.99, "gender": "male"}
+{"name": "laozhao", "age": 18, "fv": 9999.99}
+{"name": "xiaoqiao", "fv": 9999.98, "gender": "female"}
+{"name": "laowang"
+{"name": "nana", "nation": "China"}
