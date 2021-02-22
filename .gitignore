@@ -1,14 +1,4 @@
 # Created by .ignore support plugin (hsz.mobi)
-.idea/.gitignore
-.idea/compiler.xml
-.idea/encodings.xml
-.idea/inspectionProfiles/
-.idea/jarRepositories.xml
-.idea/kotlinc.xml
-.idea/misc.xml
-.idea/vcs.xml
-/${project.basedir}/
-.idea/dataSources.xml
-.idea/dataSources/
-.idea/uiDesigner.xml
 */target
+/.idea/
+*/*.iml
