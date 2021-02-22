@@ -1,4 +1,4 @@
-package com.hermesfuxi.demo.movie;
+package bigdata.hermesfuxi.hive.movie;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;

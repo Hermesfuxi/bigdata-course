@@ -1,4 +1,4 @@
-package com.hermesfuxi.demo.client;
+package bigdata.hermesfuxi.hive.client;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;

@@ -1,13 +1,11 @@
-package com.hermesfuxi.demo.client;
+package bigdata.hermesfuxi.hive.client;
 
-import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.util.Iterator;
-import java.util.List;
 
 public class ScanUtils {
     public static void main(String[] args) throws Exception {
