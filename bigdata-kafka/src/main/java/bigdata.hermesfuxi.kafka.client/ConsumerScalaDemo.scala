@@ -9,14 +9,15 @@ import org.apache.kafka.common.serialization.StringDeserializer
 
 
 //topic、分区、groupId -> 偏移量
-object ConsumerDemo {
+object ConsumerScalaDemo {
 
   def main(args: Array[String]): Unit = {
 
     // 1 配置参数
     val props = new Properties()
+
     //从哪些broker消费数据
-    props.setProperty("bootstrap.servers", "hadoop-master:9092,hadoop-master:9092,hadoop-master:9092")
+    props.setProperty("bootstrap.servers", "hadoop-master:9092,hadoop-master2:9092,hadoop-slave1:9092,hadoop-slave2:9092,hadoop-slave3:9092")
     // 反序列化的参数
     props.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
     props.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")

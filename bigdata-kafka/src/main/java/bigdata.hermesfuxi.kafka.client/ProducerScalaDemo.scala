@@ -5,14 +5,14 @@ import java.util.{Properties, UUID}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.serialization.StringSerializer
 
-object ProducerDemo {
+object ProducerScalaDemo {
 
   def main(args: Array[String]): Unit = {
 
     // 1 配置参数
     val props = new Properties()
     // 连接kafka节点
-    props.setProperty("bootstrap.servers", "node-1.51doit.cn:9092,node-2.51doit.cn:9092,node-3.51doit.cn:9092")
+    props.setProperty("bootstrap.servers", "hadoop-master:9092,hadoop-master2:9092,hadoop-slave1:9092,hadoop-slave2:9092,hadoop-slave3:9092")
     //指定key序列化方式
     props.setProperty("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
     //指定value序列化方式
@@ -23,7 +23,8 @@ object ProducerDemo {
     //props.setProperty("retries", "100") //重试次数
     //props.setProperty("request.timeout.ms", "60000") //超时时间
 
-    val topic = "doit" //三个分区{0, 1, 2}
+    // 根据已有分区
+    val topic = "wordcount" //三个分区{0, 1, 2}
 
     // 2 kafka的生产者
     val producer: KafkaProducer[String, String] = new KafkaProducer[String, String](props)
