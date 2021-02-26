@@ -31,7 +31,7 @@ object JoinDemo1 {
 
     joined.print()
 
-    streamingContext.checkpoint("./ck2")
+    streamingContext.checkpoint("./.ck/ck2")
     streamingContext.start()
     streamingContext.awaitTermination()
   }
