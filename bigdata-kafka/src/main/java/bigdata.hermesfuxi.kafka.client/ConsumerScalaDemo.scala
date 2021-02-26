@@ -38,7 +38,7 @@ object ConsumerScalaDemo {
     val consumer: KafkaConsumer[String, String] = new KafkaConsumer[String, String](props)
 
     // 订阅   参数类型  java的集合
-    val topic: util.List[String] = java.util.Arrays.asList("doit")
+    val topic: util.List[String] = java.util.Arrays.asList("test")
 
     // 3 订阅主题
     consumer.subscribe(topic)

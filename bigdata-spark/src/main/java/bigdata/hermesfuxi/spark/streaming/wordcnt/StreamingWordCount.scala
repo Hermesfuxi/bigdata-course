@@ -1,7 +1,7 @@
-package bigdata.hermesfuxi.spark.streaming
+package bigdata.hermesfuxi.spark.streaming.wordcnt
 
+import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.streaming.{Milliseconds, Seconds, StreamingContext}
 
 object StreamingWordCount {
   def main(args: Array[String]): Unit = {
@@ -21,7 +21,7 @@ object StreamingWordCount {
     val wordAndOne = inputLine.flatMap(_.split("\\s+")).map((_, 1))
 
     // 一、不累计的当前行
-//    val result = wordAndOne.reduceByKey(_ + _)
+    //    val result = wordAndOne.reduceByKey(_ + _)
 
     // 二、累计所有行
     streamingContext.checkpoint("./checkpoint")

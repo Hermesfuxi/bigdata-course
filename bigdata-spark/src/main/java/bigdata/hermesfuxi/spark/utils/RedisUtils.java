@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.redis.utils;
+package bigdata.hermesfuxi.spark.utils;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -8,7 +8,7 @@ import java.util.ResourceBundle;
 /**
  * @author Hermesfuxi
  */
-public class ClientUtil {
+public class RedisUtils {
     public static JedisPool POOL;
 
     static {

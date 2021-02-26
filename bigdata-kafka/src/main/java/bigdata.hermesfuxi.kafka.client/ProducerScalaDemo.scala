@@ -24,7 +24,7 @@ object ProducerScalaDemo {
     //props.setProperty("request.timeout.ms", "60000") //超时时间
 
     // 根据已有分区
-    val topic = "wordcount" //三个分区{0, 1, 2}
+    val topic = "test" //三个分区{0, 1, 2}
 
     // 2 kafka的生产者
     val producer: KafkaProducer[String, String] = new KafkaProducer[String, String](props)

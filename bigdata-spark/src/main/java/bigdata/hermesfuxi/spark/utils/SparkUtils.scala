@@ -7,12 +7,11 @@ object SparkUtils {
     getContext("true".equals(isLocal))
   }
 
-  def getContext(isLocal: Boolean): SparkContext = {
-    val sparkConf = new SparkConf().setAppName(this.getClass.getName)
+  def getContext(isLocal: Boolean, appName: String = this.getClass.getName): SparkContext = {
+    val sparkConf = new SparkConf().setAppName(appName)
     if (isLocal) {
       sparkConf.setMaster("local[*]")
     }
     new SparkContext(sparkConf)
   }
-
 }

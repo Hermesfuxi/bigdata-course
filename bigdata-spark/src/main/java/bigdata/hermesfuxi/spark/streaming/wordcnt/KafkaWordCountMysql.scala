@@ -1,8 +1,9 @@
-package bigdata.hermesfuxi.spark.streaming
+package bigdata.hermesfuxi.spark.streaming.wordcnt
 
 import java.sql.{Connection, PreparedStatement}
 
 import bigdata.hermesfuxi.spark.utils.{KafkaSparkUtils, MysqlUtils}
+import io.netty.util.internal.StringUtil
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.spark.streaming.dstream.InputDStream
@@ -13,16 +14,25 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
  * Date 2021/02/23
  * Desc 使用Spark-Kafka-0-10版本整合,并手动提交偏移量,维护到MySQL中
+ *
  * @author Hermesfuxi
  */
 object KafkaWordCountMysql {
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName(this.getClass.getName).setMaster("local[*]")
-    val sparkContext = new SparkContext(conf)
+
+    val sparkConf = new SparkConf().setAppName(this.getClass.getSimpleName)
+    if (args.length > 0 && "true".equals(args(0))) {
+      sparkConf.setMaster("local[*]")
+    }
+
+    val group_id = if(args.length< 2 || StringUtil.isNullOrEmpty(args(1)))  "g10001" else args(1)
+
+    val topics = if(args.length< 3 || StringUtil.isNullOrEmpty(args(2)))  "topic" else args(2)
+    val topicArr = topics.split(",")
+
+    val sparkContext = new SparkContext(sparkConf)
     sparkContext.setLogLevel("WARN")
     val streamingContext = new StreamingContext(sparkContext, Seconds(10))
-
-    val group_id = "g10001"
 
     // 准备连接Kafka的参数
     val kafkaParams = Map[String, Object](
@@ -34,24 +44,22 @@ object KafkaWordCountMysql {
       "enable.auto.commit" -> (false: java.lang.Boolean) // 消费者是否自动提交偏移量（Spark Task），为True时，重启后不会读取以前的消息
     )
 
-    val topics = Array("wordcount", "test")
-
     var kafkaDStream: InputDStream[ConsumerRecord[String, String]] = null
 
-    val offsetMap = KafkaSparkUtils.getOffsetMap(group_id, topics)
+    val offsetMap = KafkaSparkUtils.getOffsetMapFromMysql(group_id, topics)
 
     //从Kafka中读取数据创建DStream
-    if(offsetMap != null){
+    if (offsetMap != null) {
       //如果MySQL中没有记录offset,则直接连接,从latest开始消费
-      kafkaDStream =  KafkaUtils.createDirectStream(streamingContext,
+      kafkaDStream = KafkaUtils.createDirectStream(streamingContext,
         LocationStrategies.PreferConsistent, // 位置策略：就近原则
-        ConsumerStrategies.Subscribe[String, String](topics, kafkaParams, offsetMap) // 消费策略：消息的topic和参数
+        ConsumerStrategies.Subscribe[String, String](topicArr, kafkaParams, offsetMap) // 消费策略：消息的topic和参数
       )
-    }else{
+    } else {
       //如果MySQL中有记录offset,则应该从该offset处开始消费
-      kafkaDStream =  KafkaUtils.createDirectStream(streamingContext,
+      kafkaDStream = KafkaUtils.createDirectStream(streamingContext,
         LocationStrategies.PreferConsistent, // 位置策略：就近原则
-        ConsumerStrategies.Subscribe[String, String](topics, kafkaParams) // 消费策略：消息的topic和参数
+        ConsumerStrategies.Subscribe[String, String](topicArr, kafkaParams) // 消费策略：消息的topic和参数
       )
     }
 
@@ -99,10 +107,10 @@ object KafkaWordCountMysql {
             exception.printStackTrace()
           }
         } finally {
-          if(ps != null){
+          if (ps != null) {
             ps.close()
           }
-          if(connection != null){
+          if (connection != null) {
             connection.close()
           }
         }

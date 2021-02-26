@@ -1,8 +1,9 @@
 package bigdata.hermesfuxi.spark.utils
 
-import java.sql.{Connection, PreparedStatement, ResultSet}
+import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet}
 
 import org.apache.kafka.common.TopicPartition
+import redis.clients.jedis.Jedis
 
 import scala.collection.mutable
 
@@ -14,21 +15,23 @@ object KafkaSparkUtils {
 
 
   /**
-   * 从数据库读取偏移量
+   * 从 Mysql 读取偏移量
    */
-  def getOffsetMap(group_id: String, topics: Array[String]) = {
+  def getOffsetMapFromMysql(group_id: String, topics: String) = {
     var connection: Connection = null
     var ps: PreparedStatement = null
     var resultSet: ResultSet = null
-    val offsetMap: mutable.Map[TopicPartition, Long] = null
+    val offsetMap = new mutable.HashMap[TopicPartition, Long]()
     try {
       connection = MysqlUtils.getConnection
       ps = connection.prepareStatement("select * from kafka_offset where group_id=? and topic in (?)")
       ps.setString(1, group_id)
-      ps.setString(2, topics.mkString(","))
+      ps.setString(2, topics)
       resultSet = ps.executeQuery()
       while (resultSet.next()) {
-        offsetMap += new TopicPartition(resultSet.getString("topic"), resultSet.getInt("partition")) -> resultSet.getLong("offset")
+        val topicPartition = new TopicPartition(resultSet.getString("topic"), resultSet.getInt("partition"))
+        val offset = resultSet.getLong("offset")
+        offsetMap(topicPartition) = offset
       }
     } catch {
       case exception: Exception => exception.printStackTrace()
@@ -43,6 +46,63 @@ object KafkaSparkUtils {
         connection.close()
       }
     }
-    offsetMap
+    offsetMap.toMap
+  }
+
+  /**
+   * 从 HBase 读取偏移量
+   */
+  def getOffsetMapFromHBase(groupid: String, topics: String) = {
+    var connection: Connection = null
+    var ps: PreparedStatement = null
+    var resultSet: ResultSet = null
+    val offsetMap = new mutable.HashMap[TopicPartition, Long]()
+    try {
+      connection = DriverManager.getConnection("jdbc:phoenix:hadoop-master,hadoop-master2,hadoop-slave1,hadoop-slave2,hadoop-slave3:2181")
+      // 分组求max，就是求没有分分区最（大）新的偏移量
+      ps = connection.prepareStatement("select \"topic\", \"partition\", max(\"offset\") as \"offset\" from \"doit.spark_kafka_order\" where \"groupid\" = ?  and \"topic\" in (?) group by \"topic\", \"partition\"")
+
+      ps.setString(1, groupid)
+      ps.setString(2, topics)
+      resultSet = ps.executeQuery()
+      while (resultSet.next()) {
+        val topic: String = resultSet.getString("topic")
+        val partition: Int = resultSet.getInt("partition")
+        val offset: Long = resultSet.getLong("offset")
+        offsetMap(new TopicPartition(topic, partition)) = offset
+      }
+    } catch {
+      case exception: Exception => exception.printStackTrace()
+    } finally {
+      if (resultSet != null) {
+        resultSet.close()
+      }
+      if (ps != null) {
+        ps.close()
+      }
+      if (connection != null) {
+        connection.close()
+      }
+    }
+    offsetMap.toMap
+  }
+
+  def getOffsetMapFromRedis(groupId: String, topics: String) = {
+    var jedis: Jedis = null
+    val offsetMap = new mutable.HashMap[TopicPartition, Long]()
+    jedis = RedisUtils.getRedisClient
+    jedis.select(14)
+    val map: java.util.Map[String, String] = jedis.hgetAll(groupId)
+    // 导入隐式转换
+    import scala.collection.JavaConverters._
+
+    for (tp <- map.asScala) {
+      val topic_partition = tp._1
+      val offset = tp._2.toLong
+      val fields = topic_partition.split("_")
+      val topicPartition = new TopicPartition(fields(0), fields(1).toInt)
+      offsetMap(topicPartition) = offset
+    }
+    offsetMap.toMap
   }
 }

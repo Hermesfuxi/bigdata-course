@@ -1,8 +1,8 @@
-package bigdata.hermesfuxi.spark.streaming
+package bigdata.hermesfuxi.spark.streaming.wordcnt
 
 import bigdata.hermesfuxi.spark.utils.KafkaSparkUtils
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.spark.streaming.kafka010.{CanCommitOffsets, ConsumerStrategies, HasOffsetRanges, KafkaUtils, LocationStrategies}
+import org.apache.spark.streaming.kafka010.{ConsumerStrategies, HasOffsetRanges, KafkaUtils, LocationStrategies}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -30,20 +30,20 @@ object KafkaWordCount {
       ConsumerStrategies.Subscribe[String, String](topics, kafkaParams) // 消费策略：消息的topic和参数
     )
 
-//    kafkaDStream.map(_.value()).print()
+    //    kafkaDStream.map(_.value()).print()
 
-    kafkaDStream.foreachRDD(rdd=>{
-      if(!rdd.isEmpty()){
+    kafkaDStream.foreachRDD(rdd => {
+      if (!rdd.isEmpty()) {
         //获取当前批次RDD对应的偏移量（在Driver端获取到的）
         val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
         for (offsetRange <- offsetRanges) {
           println(s"topic: ${offsetRange.topic} , partition: ${offsetRange.partition} , offset: ${offsetRange.fromOffset} -> ${offsetRange.untilOffset}")
         }
 
-        val value = rdd.flatMap(_.value().split("\\s+")).map((_, 1)).reduceByKey(_+_)
+        val value = rdd.flatMap(_.value().split("\\s+")).map((_, 1)).reduceByKey(_ + _)
         value.foreach(println)
 
-//        kafkaDStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
+        //        kafkaDStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
       }
     })
 
