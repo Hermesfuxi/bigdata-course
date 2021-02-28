@@ -19,25 +19,28 @@
         <module>bigdata-clickhouse</module>
         <module>bigdata-redis</module>
         <module>bigdata-kafka</module>
+        <module>bigdata-flink-java</module>
+        <module>bigdata-flink-scala</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <target.java.version>1.8</target.java.version>
         <scala.version>2.12.12</scala.version>
         <scala.compat.version>2.12</scala.compat.version>
+        <scala.binary.version>2.12</scala.binary.version>
         <spark.version>3.0.1</spark.version>
+        <maven.compiler.version>3.8.0</maven.compiler.version>
     </properties>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>${maven.compiler.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${target.java.version}</source>
+                    <target>${target.java.version}</target>
                 </configuration>
             </plugin>
             <plugin>

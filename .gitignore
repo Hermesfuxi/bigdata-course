@@ -3,4 +3,5 @@
 /.idea/
 */*.iml
 /checkpoint
-/.ck/
+/data/ck/
+/data/out/

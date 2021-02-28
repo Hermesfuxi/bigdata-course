@@ -40,7 +40,7 @@ object WindowDemo1 {
      * reduceByKeyAndWindow: ArrayBuffer((p,1), (q,1), (r,1), (s,1), (t,1), (u,1), (v,1), (w,1), (x,1), (j,1), (k,1), (l,1), (m,1), (n,1), (o,1))
      */
 
-    streamingContext.checkpoint("./.ck/ck1")
+    streamingContext.checkpoint("data/ck/spark/ck1")
     streamingContext.start()
     streamingContext.awaitTermination()
   }
