@@ -57,8 +57,10 @@ public class StreamingJob {
 		 * https://flink.apache.org/docs/latest/apis/streaming/index.html
 		 *
 		 */
+		int parallelism = env.getParallelism();
+		System.out.println(parallelism);
 
 		// execute program
-		env.execute("Flink Streaming Java API Skeleton");
+//		env.execute("Flink Streaming Java API Skeleton");
 	}
 }

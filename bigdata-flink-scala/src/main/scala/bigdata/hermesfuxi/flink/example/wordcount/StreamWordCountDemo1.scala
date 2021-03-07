@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.flink.wordcount
+package bigdata.hermesfuxi.flink.example.wordcount
 
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment, createTypeInformation}
 

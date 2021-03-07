@@ -11,6 +11,12 @@
 
     <artifactId>bigdata-hbase</artifactId>
 
+    <properties>
+        <hadoop.version>3.1.4</hadoop.version>
+        <hbase.version>2.2.5</hbase.version>
+        <phoenix.version>5.1.0</phoenix.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -32,42 +38,47 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-auth</artifactId>
-            <version>3.1.4</version>
+            <version>${hadoop.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
-            <version>3.1.4</version>
+            <version>${hadoop.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>3.1.4</version>
+            <version>${hadoop.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
-            <version>2.2.5</version>
+            <version>${hbase.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-server</artifactId>
-            <version>2.2.5</version>
+            <version>${hbase.version}</version>
         </dependency>
 
         <!-- 使用mr程序操作hbase 数据的导入 -->
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-mapreduce</artifactId>
-            <version>2.2.5</version>
+            <version>${hbase.version}</version>
         </dependency>
 
         <!-- phoenix 凤凰 用来整合Hbase的工具 -->
         <dependency>
-             <groupId>org.apache.phoenix</groupId>
-             <artifactId>phoenix-core</artifactId>
-             <version>5.0.0-HBase-2.0</version>
-         </dependency>
+            <groupId>org.apache.phoenix</groupId>
+            <artifactId>phoenix-core</artifactId>
+            <version>${phoenix.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.phoenix</groupId>
+            <artifactId>phoenix-hbase-compat-${hbase.version}</artifactId>
+            <version>${phoenix.version}</version>
+        </dependency>
     </dependencies>
 </project>
