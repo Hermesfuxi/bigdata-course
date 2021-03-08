@@ -30,7 +30,7 @@ public class ValueStateMyDemo {
         configuration.setInteger("rest.port", 11111);
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
 
-        environment.setRestartStrategy(RestartStrategies.fallBackRestart());
+        environment.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.minutes(1), Time.seconds(5)));
 
         DataStreamSource<String> source = environment.socketTextStream("hadoop-slave3", 8888);
 
@@ -60,33 +60,31 @@ public class ValueStateMyDemo {
         public void open(Configuration parameters) throws Exception {
             // 从 StateBackend 中 获取 state 数据
             int indexOfSubtask = getRuntimeContext().getIndexOfThisSubtask();
-            File file = new File("file:///D:/WorkSpaces/IdeaProjects/bigdata-course/.ck/flink/myKeyedState/" + indexOfSubtask + ".txt");
+            File file = new File("D:/WorkSpaces/IdeaProjects/bigdata-course/.ck/flink/myKeyedState/" + indexOfSubtask + ".txt");
             if(!file.exists()){
                 file.createNewFile();
                 map = new HashMap<>();
             }else {
                 ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file));
-                map = (HashMap<String, Integer>)objectInputStream.readObject();
+                map = (Map<String, Integer>)objectInputStream.readObject();
             }
 
             //
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ObjectOutputStream objectOutputStream = null;
-                    try {
-                        objectOutputStream = new ObjectOutputStream(new FileOutputStream(file));
-                        objectOutputStream.writeObject(map);
-                        objectOutputStream.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } finally {
-                        if (objectOutputStream != null){
-                            try {
-                                objectOutputStream.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                    while (true){
+                        try {
+                            Thread.sleep(10000);
+                            if (!file.exists()) {
+                                file.createNewFile();
                             }
+                            ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(file));
+                            objectOutputStream.writeObject(map);
+                            objectOutputStream.flush();
+                            objectOutputStream.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                 }
