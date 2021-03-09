@@ -29,7 +29,9 @@ public class QueryableKeyedStateDemo {
                     "wc-state", //指定状态描述器的名称
                     Integer.class //存储数据的类型
             );
+
             stateDescriptor.setQueryable("my-query-name"); //设置状态可以查询，并指定状态查询名称
+
             //获取getRuntimeContext并根据状态描述器取出对应的State
             countState = getRuntimeContext().getState(stateDescriptor);
         }
@@ -52,7 +54,7 @@ public class QueryableKeyedStateDemo {
         ParameterTool params = ParameterTool.fromArgs(args);
         Configuration config = params.getConfiguration();
         //启用Queryable State服务相关参赛
-        config.setInteger("rest.port", 8081);
+        config.setInteger("rest.port", 1111);
         config.setBoolean(QueryableStateOptions.ENABLE_QUERYABLE_STATE_PROXY_SERVER, true);
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(config);
 
@@ -60,8 +62,9 @@ public class QueryableKeyedStateDemo {
         env.enableCheckpointing(30000);
         //设置重启策略
         env.setRestartStrategy(RestartStrategies.fixedDelayRestart(3, Time.seconds(5)));
+
         //从指定的Socket地址和端口创建DataStream
-        DataStreamSource<String> lines = env.socketTextStream("localhost", 8888);
+        DataStreamSource<String> lines = env.socketTextStream("hadoop-slave3", 8888);
         //将单词和1组合，放入到Tuple2中
         DataStream<Tuple2<String, Integer>> wordAndOne = lines.map(
                 new MapFunction<String, Tuple2<String, Integer>>() {

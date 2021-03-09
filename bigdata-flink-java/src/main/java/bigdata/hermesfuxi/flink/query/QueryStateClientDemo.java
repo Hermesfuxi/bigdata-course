@@ -17,9 +17,9 @@ public class QueryStateClientDemo {
                 Integer.class //存储数据的类型
         );
         CompletableFuture<ValueState<Integer>> resultFuture = client.getKvState(
-                JobID.fromHexString("23ba9de14e4135f6eb91d62af859c51e"), //job的ID
+                JobID.fromHexString("98d3e410a143d8b9441f4e5e7f1940b6"), //job的ID
                 "my-query-name", //可查询的state的名称
-                "spark", //查询的key
+                "flink", //查询的key
                 BasicTypeInfo.STRING_TYPE_INFO,
                 stateDescriptor);
         resultFuture.thenAccept(response -> {
