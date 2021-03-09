@@ -14,7 +14,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 
-public class MapStateDemo1 {
+public class MapStateDemo {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.getExecutionEnvironment();
 
@@ -24,6 +24,7 @@ public class MapStateDemo1 {
 
         DataStreamSource<String> source = environment.socketTextStream("hadoop-slave3", 8888);
 
+        //河北省,石家庄,1
         SingleOutputStreamOperator<Tuple3<String, String, Integer>> flatMapOperator = source.flatMap(new FlatMapFunction<String, Tuple3<String, String, Integer>>() {
             @Override
             public void flatMap(String value, Collector<Tuple3<String, String, Integer>> out) throws Exception {

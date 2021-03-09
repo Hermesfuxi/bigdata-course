@@ -3,7 +3,6 @@
 /.idea/
 */*.iml
 /checkpoint
-/data/ck/
+/.ck/
 /data/out/
 */dependency-reduced-pom.xml
-/.ck/

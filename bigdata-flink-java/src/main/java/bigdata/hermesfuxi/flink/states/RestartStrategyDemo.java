@@ -14,7 +14,7 @@ import org.apache.flink.util.Collector;
  * @author Hermesfuxi
  * desc: 从集合中创建一个数据流，集合中所有元素的类型是一致的。
  */
-public class RestartStrategyDemo1 {
+public class RestartStrategyDemo {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.getExecutionEnvironment();
 
