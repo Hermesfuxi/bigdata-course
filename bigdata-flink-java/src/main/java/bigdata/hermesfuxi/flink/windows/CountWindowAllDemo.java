@@ -14,7 +14,7 @@ import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 public class CountWindowAllDemo {
     public static void main(String[] args) throws Exception {
         Configuration configuration = new Configuration();
-        configuration.setInteger("rest.port", 11111);
+        configuration.setInteger("rest.port", 22222);
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
         DataStreamSource<String> lines = environment.socketTextStream("hadoop-slave3", 8888);
         SingleOutputStreamOperator<Integer> integerOperator = lines.map(Integer::parseInt);

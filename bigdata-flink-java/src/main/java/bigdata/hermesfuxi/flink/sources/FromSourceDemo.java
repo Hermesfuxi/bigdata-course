@@ -11,15 +11,17 @@ import java.util.List;
 
 /**
  * @author Hermesfuxi
- * desc: 从集合中创建一个数据流，集合中所有元素的类型是一致的。
+ * desc: 从集合中创建一个数据流，集合中所有元素的类型是一致的。 都是有限的数据流
  */
 public class FromSourceDemo {
     public static void main(String[] args) throws Exception {
         Configuration configuration = new Configuration();
-        configuration.setInteger("rest.port", 11111);
+        configuration.setInteger("rest.port", 22222);
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
         int parallelism = environment.getParallelism();
         System.out.println("env并行度为：" + parallelism);
+
+        DataStreamSource<Long> nums = environment.generateSequence(1, 100);
 
         DataStreamSource<String> dataStreamSource1 = environment.fromElements("AAA", "BBB", "VVV");
         dataStreamSource1.print();
@@ -32,6 +34,7 @@ public class FromSourceDemo {
         //        int sourceParallelism = dataStreamSource2.getParallelism();
 //        System.out.println("Source2的并行度为：" + sourceParallelism);
 
+        //fromParallelCollection创建的Source是多并行的Source，并且是一个有限的数据流
         DataStreamSource<Long> dataStreamSource3 = environment.fromParallelCollection(new NumberSequenceIterator(1, 100), Long.class);
         dataStreamSource3.print();
 //        int sourceParallelism = dataStreamSource3.getParallelism();

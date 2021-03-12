@@ -7,7 +7,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 public class WriteAsTextSinkDemo {
     public static void main(String[] args) throws Exception {
         Configuration configuration = new Configuration();
-        configuration.setInteger("rest.port", 11111);
+        configuration.setInteger("rest.port", 22222);
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
         DataStreamSource<String> source = environment.socketTextStream("hadoop-slave3", 8888);
         source.name("WriteAsTextSource");

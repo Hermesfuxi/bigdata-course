@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 public class EventTimeWindowDemo {
     public static void main(String[] args) throws Exception {
         Configuration configuration = new Configuration();
-        configuration.setInteger("rest.port", 11111);
+        configuration.setInteger("rest.port", 22222);
         StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
         //老版本必须要设置时间标准（1.20之前的）
         //env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);

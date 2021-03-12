@@ -27,7 +27,7 @@ import java.util.Map;
 public class ValueStateMyDemo {
     public static void main(String[] args) throws Exception {
         Configuration configuration = new Configuration();
-        configuration.setInteger("rest.port", 11111);
+        configuration.setInteger("rest.port", 22222);
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
 
         environment.setRestartStrategy(RestartStrategies.failureRateRestart(3, Time.minutes(1), Time.seconds(5)));

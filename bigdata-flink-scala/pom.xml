@@ -45,7 +45,6 @@ under the License.
 
     <properties>
         <flink.version>1.12.1</flink.version>
-        <log4j.version>2.12.1</log4j.version>
     </properties>
 
     <dependencies>
@@ -88,27 +87,6 @@ under the License.
             <version>${scala.version}</version>
             <!--            <scope>provided</scope>-->
         </dependency>
-
-        <!-- Add logging framework, to produce console output when running in the IDE. -->
-        <!-- These dependencies are excluded from the application JAR by default. -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-            <scope>runtime</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -118,7 +96,7 @@ under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>${maven.shade.version}</version>
                 <executions>
                     <!-- Run shade goal on package phase -->
                     <execution>
@@ -164,8 +142,8 @@ under the License.
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.version}</version>
                 <configuration>
-                    <source>${target.java.version}</source>
-                    <target>${target.java.version}</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 
@@ -173,7 +151,7 @@ under the License.
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>${scala.maven.version}</version>
                 <executions>
                     <execution>
                         <goals>

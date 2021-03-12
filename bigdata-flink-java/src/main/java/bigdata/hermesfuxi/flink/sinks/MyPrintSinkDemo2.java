@@ -8,7 +8,7 @@ import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 public class MyPrintSinkDemo2 {
     public static void main(String[] args) throws Exception {
         Configuration configuration = new Configuration();
-        configuration.setInteger("rest.port", 11111);
+        configuration.setInteger("rest.port", 22222);
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
 
         DataStreamSource<String> textStream = environment.socketTextStream("hadoop-slave3", 8888);

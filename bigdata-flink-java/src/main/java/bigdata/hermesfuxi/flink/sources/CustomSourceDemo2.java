@@ -12,7 +12,7 @@ import java.util.UUID;
 public class CustomSourceDemo2 {
     public static void main(String[] args) throws Exception {
         Configuration configuration = new Configuration();
-        configuration.setInteger("rest.port", 11111);
+        configuration.setInteger("rest.port", 22222);
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
         int parallelism = environment.getParallelism();
         System.out.println("env并行度为：" + parallelism);

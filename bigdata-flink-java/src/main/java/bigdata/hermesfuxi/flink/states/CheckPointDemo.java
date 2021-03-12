@@ -44,7 +44,7 @@ public class CheckPointDemo {
 
         // 开启 checkpoints 的外部持久化，但是在job失败的时候不会自动清理，需要自己手工清理 state
         // 不会在任务正常停止的过程中清理掉检查点数据，而是会一直保存在外部系统介质中，另外也可以通过从外部检查点中对任务进行恢复
-        // DELETE_ON_CANCELLATION：在 job canceled 时 会自动删除外部的状态数据，但是如果是 FAILED 的状态则会保留；
+        // DELETE_ON_CANCELLATION：在 job canceled 时 会自动删除外部的状态数据，但是如果是 FAILED 的状态则会保留； （默认）
         // RETAIN_ON_CANCELLATION：在 job canceled 时 会保留状态数据
         checkpointConfig.enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
 

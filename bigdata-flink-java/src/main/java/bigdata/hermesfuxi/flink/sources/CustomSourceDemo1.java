@@ -11,12 +11,12 @@ import java.util.List;
 
 /**
  * @author Hermesfuxi
- * desc: 自定义 source
+ * desc: 自定义 source - SourceFunction（并行度1） ，ParallelSourceFunction（多并行），RichParallelSourceFunction（多并行）
  */
 public class CustomSourceDemo1 {
     public static void main(String[] args) throws Exception {
         Configuration configuration = new Configuration();
-        configuration.setInteger("rest.port", 11111);
+        configuration.setInteger("rest.port", 22222);
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
         int parallelism = environment.getParallelism();
         System.out.println("env并行度为：" + parallelism);

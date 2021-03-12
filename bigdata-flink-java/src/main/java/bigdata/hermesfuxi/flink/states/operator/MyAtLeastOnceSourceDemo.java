@@ -1,5 +1,6 @@
 package bigdata.hermesfuxi.flink.states.operator;
 
+import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.ListState;
@@ -7,12 +8,15 @@ import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
+import org.apache.flink.streaming.api.checkpoint.ListCheckpointed;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
 import java.io.RandomAccessFile;
+import java.util.Collections;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -96,6 +100,59 @@ public class MyAtLeastOnceSourceDemo {
         @Override
         public void cancel() {
             System.out.println("cancel exec");
+            flag = false;
+        }
+    }
+
+    private static class MyAtLeastOnceSource2 extends RichParallelSourceFunction<String> implements ListCheckpointed<Long> {
+
+        private boolean flag = true;
+
+        private long offset = 0;
+
+        private String path;
+
+        public MyAtLeastOnceSource2(String path) {
+            this.path = path;
+        }
+
+        @Override
+        public void restoreState(List<Long> listState) throws Exception {
+            for (Long aLong : listState) {
+                offset = aLong;
+            }
+        }
+
+
+        @Override
+        public List<Long> snapshotState(long checkpointId, long timestamp) throws Exception {
+            return Collections.singletonList(offset);
+        }
+
+        @Override
+        public void run(SourceContext<String> ctx) throws Exception {
+            int indexOfThisSubtask = getRuntimeContext().getIndexOfThisSubtask();
+            RandomAccessFile accessFile = new RandomAccessFile(path + "/" + indexOfThisSubtask + ".txt", "r");
+            accessFile.seek(offset);
+
+            while (flag) {
+                String line = accessFile.readLine();
+                if(line != null) {
+                    line = new String(line.getBytes(Charsets.ISO_8859_1), Charsets.UTF_8);
+                    //获取最新的偏移量
+                    synchronized (ctx.getCheckpointLock()) {
+                        offset = accessFile.getFilePointer();
+                        ctx.collect(indexOfThisSubtask + ".txt : " + line);
+                    }
+                } else {
+                    Thread.sleep(500);
+                }
+            }
+
+        }
+
+        @Override
+        public void cancel() {
             flag = false;
         }
     }
