@@ -2,7 +2,7 @@ package bigdata.hermesfuxi.spark.streaming.order
 
 import java.lang
 
-import bigdata.hermesfuxi.spark.utils.{HBaseUtils, KafkaSparkUtils}
+import bigdata.hermesfuxi.spark.utils.{HBaseUtils, KafkaSparkUtils, RedisUtils}
 import com.alibaba.fastjson.JSON
 import io.netty.util.internal.StringUtil
 import org.apache.hadoop.hbase.TableName
@@ -14,11 +14,12 @@ import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka010.{ConsumerStrategies, HasOffsetRanges, KafkaUtils, LocationStrategies}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext, TaskContext}
+import redis.clients.jedis.{Jedis, Pipeline}
 
 /**
- * spark streaming 结合kafka 精确消费一次，并将结果保存到hbase
+ * spark streaming 结合kafka 精确消费一次，并将结果保存到 redis
  */
-object KafkaOrderDetailHbase {
+object KafkaOrderDetailRedis {
   def main(args: Array[String]): Unit = {
 
     val sparkConf = new SparkConf().setAppName(this.getClass.getSimpleName)
@@ -26,9 +27,9 @@ object KafkaOrderDetailHbase {
       sparkConf.setMaster("local[*]")
     }
 
-    val groupid = if(args.length < 2 || StringUtil.isNullOrEmpty(args(1)))  "g10002" else args(1)
+    val groupid = if (args.length < 2 || StringUtil.isNullOrEmpty(args(1))) "g10002" else args(1)
 
-    val topics = if(args.length < 3 || StringUtil.isNullOrEmpty(args(2)))  "topic" else args(2)
+    val topics = if (args.length < 3 || StringUtil.isNullOrEmpty(args(2))) "topic" else args(2)
 
     val topicArr = topics.split(",")
 
@@ -48,17 +49,17 @@ object KafkaOrderDetailHbase {
 
     var kafkaDStream: InputDStream[ConsumerRecord[String, String]] = null
 
-    val offsetMap = KafkaSparkUtils.getOffsetMapFromHBase(groupid, topics)
+    val offsetMap = KafkaSparkUtils.getOffsetMapFromRedis(groupid, topics)
 
     //从Kafka中读取数据创建DStream
     if (offsetMap != null) {
-      //如果MySQL中没有记录offset,则直接连接,从latest开始消费
+      //如果 redis 中没有记录offset,则直接连接,从latest开始消费
       kafkaDStream = KafkaUtils.createDirectStream(streamingContext,
         LocationStrategies.PreferConsistent, // 位置策略：就近原则
         ConsumerStrategies.Subscribe[String, String](topicArr, kafkaParams, offsetMap) // 消费策略：消息的topic和参数
       )
     } else {
-      //如果MySQL中有记录offset,则应该从该offset处开始消费
+      //如果 redis 中有记录offset,则应该从该offset处开始消费
       kafkaDStream = KafkaUtils.createDirectStream(streamingContext,
         LocationStrategies.PreferConsistent, // 位置策略：就近原则
         ConsumerStrategies.Subscribe[String, String](topicArr, kafkaParams) // 消费策略：消息的topic和参数
@@ -79,48 +80,44 @@ object KafkaOrderDetailHbase {
         })
           .filter(_ != null)
           .foreachPartition(iter => {
-            val connection = HBaseUtils.getConnection
-            val table = connection.getTable(TableName.valueOf("doit.spark_kafka_order"))
-            val puts = new java.util.ArrayList[Put](1000)
+            var redisClient: Jedis = null
+            var pipeline: Pipeline = null
+            try{
+              redisClient = RedisUtils.getRedisClient
+              // 开始事务
+              pipeline = redisClient.pipelined()
+              pipeline.multi()
 
-            // 在Executor端获取到偏移量
-            // 获取当前Task的PartitionID，然后到offsetRanges数组中取对应下标的偏移量，就是对应分区的偏移量
-            val offsetRange = offsetRanges(TaskContext.getPartitionId())
+              iter.foreach(orderBean => {
+                //将计算好的结果写入到Redis中
+                pipeline.hset("spark_kafka_order", orderBean.oid, JSON.toJSONString(orderBean));
+              })
+              // 在Executor端获取到偏移量
+              // 获取当前Task的PartitionID，然后到offsetRanges数组中取对应下标的偏移量，就是对应分区的偏移量
+              val offsetRange = offsetRanges(TaskContext.getPartitionId())
+              val topic = offsetRange.topic
+              val partition = offsetRange.partition
+              val offset = offsetRange.untilOffset
+              pipeline.hset("kafka_offset" + "_" + groupid, topic + "_" + partition, String.valueOf(offset));
+              // 提交事务
+              pipeline.exec()
+              pipeline.sync()
 
-            // HBase支持行级事务
-            iter.foreach(orderBean => {
-              //设置数据，包括rk
-              val put = new Put(Bytes.toBytes(orderBean.oid))
-              //设置列族的数据
-              put.addColumn(Bytes.toBytes("orders"), Bytes.toBytes("cid"), Bytes.toBytes(orderBean.cid))
-              put.addColumn(Bytes.toBytes("orders"), Bytes.toBytes("money"), Bytes.toBytes(orderBean.money))
-              put.addColumn(Bytes.toBytes("orders"), Bytes.toBytes("longitude"), Bytes.toBytes(orderBean.longitude))
-              put.addColumn(Bytes.toBytes("orders"), Bytes.toBytes("latitude"), Bytes.toBytes(orderBean.latitude))
-
-              // 将偏移量写在分区的最后一行中
-              if (!iter.hasNext) {
-                put.addColumn(Bytes.toBytes("offsets"), Bytes.toBytes("groupid"), Bytes.toBytes(groupid))
-                put.addColumn(Bytes.toBytes("offsets"), Bytes.toBytes("topic"), Bytes.toBytes(offsetRange.topic))
-                put.addColumn(Bytes.toBytes("offsets"), Bytes.toBytes("partition"), Bytes.toBytes(offsetRange.partition))
-                put.addColumn(Bytes.toBytes("offsets"), Bytes.toBytes("offset"), Bytes.toBytes(offsetRange.untilOffset))
+            } catch {
+              case exception: Exception => {
+                exception.printStackTrace()
+                pipeline.discard()
+                // 停掉application
+                streamingContext.stop(true)
               }
-
-              //将put放入到puts这个list中
-              puts.add(put)
-              if (puts.size() == 1000) {
-                //将数据写入到Hbase中
-                table.put(puts)
-                //清空puts集合中的数据
-                puts.clear()
+            } finally {
+              if (pipeline != null) {
+                pipeline.close()
               }
-            })
-
-            //将没有达到100的数据也写入到Hbase中
-            if (puts.size() > 0) {
-              table.put(puts)
+              if (redisClient != null) {
+                redisClient.close()
+              }
             }
-            //关闭Hbase连接
-            connection.close()
           })
       }
     })

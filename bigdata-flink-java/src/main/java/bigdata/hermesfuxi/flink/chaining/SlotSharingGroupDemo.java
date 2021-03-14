@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.flink.concepts;
+package bigdata.hermesfuxi.flink.chaining;
 
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.common.typeinfo.Types;

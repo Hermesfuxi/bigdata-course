@@ -33,7 +33,7 @@ object KafkaWordCount {
     //    kafkaDStream.map(_.value()).print()
 
     kafkaDStream.foreachRDD(rdd => {
-      if (!rdd.isEmpty()) {
+      if (!rdd.isEmpty() && rdd.count() > 0) {
         //获取当前批次RDD对应的偏移量（在Driver端获取到的）
         val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
         for (offsetRange <- offsetRanges) {

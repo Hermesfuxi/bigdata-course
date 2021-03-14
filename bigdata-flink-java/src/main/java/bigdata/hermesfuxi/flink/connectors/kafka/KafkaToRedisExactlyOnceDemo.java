@@ -19,7 +19,7 @@ import org.apache.flink.util.Collector;
 
 import java.util.Properties;
 
-public class KafkaToRedisAtLeastOnceDemo {
+public class KafkaToRedisExactlyOnceDemo {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(2);

@@ -30,7 +30,7 @@ public class BatchWordCountDemo1 {
         AggregateOperator<Tuple2<String, Integer>> result = wordAndOne.groupBy(0).sum(1);
 //        result.print();
 
-        result.writeAsText("data/out/flink/wc1").setParallelism(1);
+        result.writeAsText("data/out/flink/wc1").setParallelism(4);
 
         // 离线计算不用执行 env.execute()
         environment.execute();

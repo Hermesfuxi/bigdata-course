@@ -25,13 +25,23 @@ public class KafkaToKafkaExactlyOnceDemo {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(2);
+
         env.enableCheckpointing(10*1000, CheckpointingMode.EXACTLY_ONCE);
-        env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+        CheckpointConfig checkpointConfig = env.getCheckpointConfig();
+        // 确保检查点之间有至少500 ms的间隔
+        checkpointConfig.setMinPauseBetweenCheckpoints(500);
+        // 同一时间只允许进行一个检查点
+        checkpointConfig.setMaxConcurrentCheckpoints(1);
+        // 检查点必须在一分钟内完成，没有完成就被丢弃
+        checkpointConfig.setCheckpointTimeout(60000);
+        // 表示一旦Flink处理程序被cancel后，会保留Checkpoint数据，checkpoint有多个，可以根据实际需要恢复到指定的Checkpoint
+        checkpointConfig.enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+
         env.setStateBackend(new FsStateBackend("file:///D:/WorkSpaces/IdeaProjects/bigdata-course/.ck/flink"));
 
         Properties sourceProps = new Properties();
         sourceProps.load(KafkaToKafkaExactlyOnceDemo.class.getClassLoader().getResourceAsStream("kafka.properties"));
-        //设置消费者的事务隔离级别：只读已经提交事务的数据，脏数据不读
+        //设置消费者的事务隔离级别：只读已经提交事务的数据，脏数据不读（）
         sourceProps.setProperty("group.id", "KafkaToKafkaExactlyOnceDemo");
         sourceProps.setProperty("isolation.level", "read_committed");
         FlinkKafkaConsumer<String> kafkaConsumer = new FlinkKafkaConsumer<String>("kafka-in", new SimpleStringSchema(), sourceProps);

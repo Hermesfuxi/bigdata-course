@@ -9,7 +9,7 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka010.{ConsumerStrategies, HasOffsetRanges, KafkaUtils, LocationStrategies}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext, TaskContext}
 
 /**
  * Date 2021/02/23
@@ -63,9 +63,10 @@ object KafkaWordCountMysql {
       )
     }
 
-    // 手动维护偏移量:消费了一小批数据就应该提交一次offset
+    // 手动维护偏移量: 消费了一小批数据就应该提交一次offset
     // 对DStream中的RDD进行操作: transform(转换) 和 foreachRDD(动作)
     kafkaDStream.foreachRDD(rdd => {
+      // foreachRDD 是微批次（模拟流），每间隔一段时间，就会发送一个job，其数据集就是 rdd，可将此rdd当作 source 处理
       if (!rdd.isEmpty() && rdd.count() > 0) {
         var connection: Connection = null
         var ps: PreparedStatement = null
@@ -77,9 +78,10 @@ object KafkaWordCountMysql {
           //注意:通过打印接收到的消息可以看到,里面有我们需要维护的offset,和要处理的数据
           //接下来可以对数据进行处理....或者使用transform返回和之前一样处理
           val result = rdd.flatMap(_.value().split("\\s+")).map((_, 1)).reduceByKey(_ + _)
+          // 考虑到事务控制，需要将数据收集到Driver端提交（避免分布式事务难题，微批次的数据量不会过大）
           for (wordResult <- result.collect()) {
-            // insert ... on duplicate key update: 键相同时更新，键不同时插入
-            ps = connection.prepareStatement("insert kafka_wc (word, cnt) values(?, ?)  ON DUPLICATE KEY UPDATE cnt=cnt+?")
+            // insert ... on duplicate key update: 键相同时更新，键不同时插入，在需要旧值时使用
+            ps = connection.prepareStatement("insert into kafka_wc (word, cnt) values(?, ?)  ON DUPLICATE KEY UPDATE cnt=cnt+?")
             ps.setString(1, wordResult._1)
             ps.setLong(2, wordResult._2)
             ps.setLong(3, wordResult._2)
@@ -92,7 +94,7 @@ object KafkaWordCountMysql {
 
           //实际中偏移量可以提交到MySQL/Redis中
           for (offsetRange <- offsetRanges) {
-            //replace into表示之前有就替换,没有就插入
+            //replace into： 键相同时整行替换，键不同时插入，在不需要旧值时使用（先删除后插入）
             ps = connection.prepareStatement("replace into kafka_offset (`group_id`, `topic`, `partition`, `offset`) values(?, ?, ?, ?)")
             ps.setString(1, group_id)
             ps.setString(2, offsetRange.topic)

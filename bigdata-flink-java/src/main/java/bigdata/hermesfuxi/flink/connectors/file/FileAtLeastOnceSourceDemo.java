@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.flink.states.operator;
+package bigdata.hermesfuxi.flink.connectors.file;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
@@ -23,13 +23,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * 自定义一个Source，可以记录偏移量，实现AtLeastOnce
  */
-public class MyAtLeastOnceSourceDemo {
+public class FileAtLeastOnceSourceDemo {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         env.enableCheckpointing(5000);
 
-        DataStreamSource<String> source = env.addSource(new MyAtLeastOnceSource(".ck/flink/MyAtLeastOnceSource"));
+        DataStreamSource<String> source = env.addSource(new FileAtLeastOnceSource(".ck/flink/MyAtLeastOnceSource"));
 
         DataStreamSource<String> textStream = env.socketTextStream("hadoop-slave3", 8888);
         DataStream<String> result = textStream.union(source);
@@ -37,13 +37,13 @@ public class MyAtLeastOnceSourceDemo {
         env.execute();
     }
 
-    private static class MyAtLeastOnceSource extends RichParallelSourceFunction<String> implements CheckpointedFunction {
+    private static class FileAtLeastOnceSource extends RichParallelSourceFunction<String> implements CheckpointedFunction {
         private String path;
         private boolean flag = true;
         private ListState<Long> listState;
         private long offset = 0;
 
-        public MyAtLeastOnceSource(String path) {
+        public FileAtLeastOnceSource(String path) {
             this.path = path;
         }
 
@@ -104,7 +104,7 @@ public class MyAtLeastOnceSourceDemo {
         }
     }
 
-    private static class MyAtLeastOnceSource2 extends RichParallelSourceFunction<String> implements ListCheckpointed<Long> {
+    private static class FileAtLeastOnceSource2 extends RichParallelSourceFunction<String> implements ListCheckpointed<Long> {
 
         private boolean flag = true;
 
@@ -112,7 +112,7 @@ public class MyAtLeastOnceSourceDemo {
 
         private String path;
 
-        public MyAtLeastOnceSource2(String path) {
+        public FileAtLeastOnceSource2(String path) {
             this.path = path;
         }
 

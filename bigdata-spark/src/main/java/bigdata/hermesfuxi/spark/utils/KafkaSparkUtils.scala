@@ -91,17 +91,21 @@ object KafkaSparkUtils {
     var jedis: Jedis = null
     val offsetMap = new mutable.HashMap[TopicPartition, Long]()
     jedis = RedisUtils.getRedisClient
-    jedis.select(14)
-    val map: java.util.Map[String, String] = jedis.hgetAll(groupId)
+    val map: java.util.Map[String, String] = jedis.hgetAll("kafka_offset" + "_" + groupId)
     // 导入隐式转换
     import scala.collection.JavaConverters._
 
     for (tp <- map.asScala) {
       val topic_partition = tp._1
       val offset = tp._2.toLong
+
       val fields = topic_partition.split("_")
-      val topicPartition = new TopicPartition(fields(0), fields(1).toInt)
-      offsetMap(topicPartition) = offset
+      val topic = fields(0)
+      val partition = fields(1).toInt
+      if(topics.contains(topic)){
+        val topicPartition = new TopicPartition(topic, partition)
+        offsetMap(topicPartition) = offset
+      }
     }
     offsetMap.toMap
   }
