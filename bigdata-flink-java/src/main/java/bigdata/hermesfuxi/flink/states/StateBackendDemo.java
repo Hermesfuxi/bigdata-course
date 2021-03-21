@@ -42,10 +42,10 @@ public class StateBackendDemo {
         environment.setStateBackend(new FsStateBackend("file:///D:/WorkSpaces/IdeaProjects/bigdata-course/.ck/flink"));
 //        environment.setStateBackend(new FsStateBackend("hdfs://hadoop-master:9000/flink/ck"));
 
-        // 三、RocksDBStateBackend：大状态、长窗口、大key/value状态的的任务，全高可用配置，将工作状态存储在taskManger的本地文件系统，用于生产
+        // 三、RocksDBStateBackend：大状态、长窗口、大key/value状态的的任务，全高可用配置，将工作状态存储在taskManger的本地文件系统(RocksDB数据库)，用于生产
         // RocksDBStateBackend仅支持异步快照
         // 将工作状态保存在RocksDB数据库（位置在taskManager的数据目录）。通过checkpoint, 整个RocksDB数据库被复制到配置的文件系统或目录中。最小元数据保存jobManager的内存中
-        // RocksDBStateBackend可以通过enableIncrementalCheckpointing参数配置是否进行增量Checkpoint（而MemoryStateBackend 和 FsStateBackend不能）
+        // RocksDBStateBackend可以通过enableIncrementalCheckpointing参数配置是否进行 增量Checkpoint（而 MemoryStateBackend 和 FsStateBackend不能）
         environment.setStateBackend(new RocksDBStateBackend("file:///D:/WorkSpaces/IdeaProjects/bigdata-course/.ck/flink"));
 //        environment.setStateBackend(new RocksDBStateBackend("hdfs://hadoop-master:9000/flink/ck", true));
 

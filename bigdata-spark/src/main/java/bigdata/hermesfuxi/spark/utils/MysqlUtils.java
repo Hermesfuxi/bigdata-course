@@ -9,9 +9,9 @@ import java.util.ResourceBundle;
  * @author Hermesfuxi
  */
 public class MysqlUtils {
-    public static String url;
-    public static String user;
-    public static String password;
+    private static String url;
+    private static String user;
+    private static String password;
     static {
         ResourceBundle resourceBundle = ResourceBundle.getBundle("mysql");
         url = resourceBundle.getString("url");

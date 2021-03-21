@@ -25,6 +25,13 @@ public class CountAverageWithAggregateStateDemo {
         );
 
         dataStreamSource.keyBy(t->t.f0).flatMap(new CountAverageWithAggregateState()).print();
+        //11> (1,Contains: 3)
+        //16> (2,Contains: 4)
+        //11> (1,Contains: 3 7)
+        //16> (2,Contains: 4 2)
+        //11> (1,Contains: 3 7 5)
+        //16> (2,Contains: 4 2 6)
+
         env.execute("TestStatefulApi");
     }
 
@@ -39,13 +46,13 @@ public class CountAverageWithAggregateStateDemo {
                 //变量初始化
                 @Override
                 public String createAccumulator() {
-                    return "Contains";
+                    return "Contains:";
                 }
 
                 //数据处理
                 @Override
                 public String add(Long value, String accumulator) {
-                    return "Contains".equals(accumulator) ? accumulator + value : accumulator + "and" + value;
+                    return "Contains".equals(accumulator) ? accumulator + value : accumulator + " " + value;
                 }
 
                 //返回值函数

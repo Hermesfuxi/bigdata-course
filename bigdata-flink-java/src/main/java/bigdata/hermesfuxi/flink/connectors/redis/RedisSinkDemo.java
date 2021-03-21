@@ -30,7 +30,12 @@ public class RedisSinkDemo {
 
         result.print();
 
-        FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder().setHost("localhost").setPort(16379).setPassword("123456").build();
+        FlinkJedisPoolConfig conf = new FlinkJedisPoolConfig.Builder()
+                .setHost("localhost")
+                .setPort(16379)
+                .setPassword("123456")
+                .build();
+
         //将数据写入Redis
         result.addSink(new RedisSink(conf, new RedisMapper<Tuple2<String, Integer>>() {
 

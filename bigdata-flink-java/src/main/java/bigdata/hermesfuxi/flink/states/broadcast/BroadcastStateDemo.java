@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.flink.states.operator;
+package bigdata.hermesfuxi.flink.states.broadcast;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.state.BroadcastState;
@@ -88,6 +88,7 @@ uid4,12,777.83
         public void processBroadcastElement(Tuple3<String, String, String> value, Context ctx, Collector<Tuple4<String, String, String, Double>> out) throws Exception {
             //INSERT,UPDATE,DELETE
             String type = value.f0;
+
             String id = value.f1;
             String name = value.f2;
 

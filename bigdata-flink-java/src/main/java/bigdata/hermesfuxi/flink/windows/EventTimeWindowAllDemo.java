@@ -32,8 +32,8 @@ public class EventTimeWindowAllDemo {
         // 新版本
         SingleOutputStreamOperator<String> linesWithWaterMarks = lines.assignTimestampsAndWatermarks(
                 WatermarkStrategy.<String>forBoundedOutOfOrderness(Duration.ofSeconds(0))
-                        // 使用 匿名内部类
                         .withTimestampAssigner((element, recordTimestamp) -> Long.parseLong(element.split(",")[0])));
+                        // 使用 匿名内部类
 //                        .withTimestampAssigner(new SerializableTimestampAssigner<String>() {
 //                            @Override
 //                            public long extractTimestamp(String element, long recordTimestamp) {
@@ -43,13 +43,13 @@ public class EventTimeWindowAllDemo {
 //                        }));
 
         // 旧版本使用方法
-        SingleOutputStreamOperator<String> oldLinesWithWaterMarks = lines.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<String>(Time.seconds(0)) {
-            @Override
-            public long extractTimestamp(String element) {
-                LocalDateTime localDateTime = LocalDateTime.parse(element.split(",")[0], DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                return localDateTime.toEpochSecond(ZoneOffset.ofHours(8)) * 1000;
-            }
-        });
+//        SingleOutputStreamOperator<String> oldLinesWithWaterMarks = lines.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor<String>(Time.seconds(0)) {
+//            @Override
+//            public long extractTimestamp(String element) {
+//                LocalDateTime localDateTime = LocalDateTime.parse(element.split(",")[0], DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+//                return localDateTime.toEpochSecond(ZoneOffset.ofHours(8)) * 1000;
+//            }
+//        });
 
         //提取完EventTime后会生成WaterMark，但是数据还是原来的老样子(2021-03-06 09:30:30,1)，需要转换
         SingleOutputStreamOperator<Integer> operator = linesWithWaterMarks.map(line -> Integer.valueOf(line.split(",")[1]));
