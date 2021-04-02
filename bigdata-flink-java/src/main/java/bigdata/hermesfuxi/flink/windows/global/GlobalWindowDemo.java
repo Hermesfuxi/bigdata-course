@@ -7,10 +7,7 @@ import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.GlobalWindows;
-import org.apache.flink.streaming.api.windowing.triggers.CountTrigger;
-import org.apache.flink.streaming.api.windowing.triggers.ProcessingTimeoutTrigger;
-import org.apache.flink.streaming.api.windowing.triggers.PurgingTrigger;
-import org.apache.flink.streaming.api.windowing.triggers.Trigger;
+import org.apache.flink.streaming.api.windowing.triggers.*;
 import org.apache.flink.util.Collector;
 
 import java.time.Duration;
@@ -22,7 +19,8 @@ public class GlobalWindowDemo {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        DataStreamSource<String> socketTextStream = env.socketTextStream("hadoop-slave2", 8888);
+        DataStreamSource<String> socketTextStream = env.socketTextStream("hadoop-slave3", 8888);
+        env.setParallelism(1);
 
         SingleOutputStreamOperator<Tuple2<String, Integer>> streamOperator = socketTextStream.flatMap(new FlatMapFunction<String, Tuple2<String, Integer>>() {
             @Override
@@ -40,9 +38,15 @@ public class GlobalWindowDemo {
 
         // 没有 Trigger， 不会触发，默认是 NeverTrigger
         keyedStream.window(GlobalWindows.create())
-                // TODO 多个触发器调用会有用吗？
+                // 多个触发器调用会有用吗？ 不会，后面会覆盖前面的
+                .trigger(CountTrigger.of(2))
+                .trigger(CountTrigger.of(5))
+                .sum(1).print("两个Trigger");
+
+        keyedStream.window(GlobalWindows.create())
+                // 复合触发器调用，两个条件任一满足，就会触发
                 .trigger(ProcessingTimeoutTrigger.of(CountTrigger.of(2), Duration.ofSeconds(10)))
-                .sum(1).print("未加Trigger");
+                .sum(1).print("复合Trigger");
 
         env.execute();
     }
