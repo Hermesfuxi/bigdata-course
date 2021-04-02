@@ -18,9 +18,9 @@
         <module>bigdata-spark</module>
         <module>bigdata-clickhouse</module>
         <module>bigdata-redis</module>
-        <module>bigdata-kafka</module>
         <module>bigdata-flink-java</module>
         <module>bigdata-flink-scala</module>
+        <module>bigdata-kafka</module>
     </modules>
 
     <properties>

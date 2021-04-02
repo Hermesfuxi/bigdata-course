@@ -4,6 +4,7 @@ import java.lang
 
 import bigdata.hermesfuxi.spark.utils.{HBaseUtils, KafkaSparkUtils, RedisUtils}
 import com.alibaba.fastjson.JSON
+import com.alibaba.fastjson.serializer.SerializerFeature
 import io.netty.util.internal.StringUtil
 import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.client.Put
@@ -25,6 +26,8 @@ object KafkaOrderDetailRedis {
     val sparkConf = new SparkConf().setAppName(this.getClass.getSimpleName)
     if (args.length > 0 && "true".equals(args(0))) {
       sparkConf.setMaster("local[*]")
+    }else{
+      sparkConf.setMaster("yarn-cluster")
     }
 
     val groupid = if (args.length < 2 || StringUtil.isNullOrEmpty(args(1))) "g10002" else args(1)
@@ -90,7 +93,7 @@ object KafkaOrderDetailRedis {
 
               iter.foreach(orderBean => {
                 //将计算好的结果写入到Redis中
-                pipeline.hset("spark_kafka_order", orderBean.oid, JSON.toJSONString(orderBean));
+                pipeline.hset("spark_kafka_order", orderBean.oid, JSON.toJSONString(orderBean, SerializerFeature.WriteMapNullValue));
               })
               // 在Executor端获取到偏移量
               // 获取当前Task的PartitionID，然后到offsetRanges数组中取对应下标的偏移量，就是对应分区的偏移量

@@ -44,6 +44,10 @@ public class MyPrintSinkDemo1 {
             System.out.println(timestamp);
 
             System.out.println(value);
+
+
         }
     }
+
+// Purging the window's content allows us to receive late events without merging them twice with the old session
 }
