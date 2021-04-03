@@ -8,11 +8,11 @@ import java.util.Map;
 
 public class ClickHouseJDBC {
     public static void main(String[] args) {
-        String sqlDB = "show databases";//查询数据库
-        String sqlTab = "show tables";//查看表
+        String sqlShowDb = "show databases";//查询数据库
+        String sqlShowTable = "show tables";//查看表
 //        String sqlCount = "select count(*) count from ontime";//查询ontime数据量
-        exeSql(sqlDB);
-        exeSql(sqlTab);
+        exeSql(sqlShowDb);
+        exeSql(sqlShowTable);
 //        exeSql(sqlCount);
     }
 
@@ -32,15 +32,15 @@ public class ClickHouseJDBC {
             System.out.println("执行（" + sql + "）耗时：" + (end - begin) + "ms");
 
             ResultSetMetaData rsmd = results.getMetaData();
-            List<Map> list = new ArrayList<Map>();
+            List<Map<String, String>> list = new ArrayList<>();
             while (results.next()) {
-                Map map = new HashMap();
+                Map<String, String> map = new HashMap<>();
                 for (int i = 1; i <= rsmd.getColumnCount(); i++) {
                     map.put(rsmd.getColumnName(i), results.getString(rsmd.getColumnName(i)));
                 }
                 list.add(map);
             }
-            for (Map map : list) {
+            for (Map<String, String> map : list) {
                 System.err.println(map);
             }
             connection.commit();
@@ -51,9 +51,17 @@ public class ClickHouseJDBC {
                 if (results != null) {
                     results.close();
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
                 if (statement != null) {
                     statement.close();
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
                 if (connection != null) {
                     connection.close();
                 }

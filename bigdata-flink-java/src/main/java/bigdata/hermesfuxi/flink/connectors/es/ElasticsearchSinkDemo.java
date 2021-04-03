@@ -50,4 +50,9 @@ public class ElasticsearchSinkDemo {
 
         env.execute();
     }
+
+
+
+
+
 }

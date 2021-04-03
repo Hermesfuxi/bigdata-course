@@ -62,7 +62,10 @@ public class ValueStateMyDemo {
             int indexOfSubtask = getRuntimeContext().getIndexOfThisSubtask();
             File file = new File("D:/WorkSpaces/IdeaProjects/bigdata-course/.ck/flink/myKeyedState/" + indexOfSubtask + ".txt");
             if(!file.exists()){
-                file.createNewFile();
+                boolean newFileCreated = file.createNewFile();
+                if(!newFileCreated){
+                    System.out.println("出错");
+                }
                 map = new HashMap<>();
             }else {
                 ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file));
@@ -77,7 +80,10 @@ public class ValueStateMyDemo {
                         try {
                             Thread.sleep(10000);
                             if (!file.exists()) {
-                                file.createNewFile();
+                                boolean newFileCreated = file.createNewFile();
+                                if(!newFileCreated){
+                                    System.out.println("出错");
+                                }
                             }
                             ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(file));
                             objectOutputStream.writeObject(map);

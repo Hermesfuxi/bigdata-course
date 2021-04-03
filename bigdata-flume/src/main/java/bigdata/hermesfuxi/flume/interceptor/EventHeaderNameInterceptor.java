@@ -5,6 +5,7 @@ import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -37,8 +38,7 @@ public class EventHeaderNameInterceptor implements Interceptor {
     @Override
     public Event intercept(Event event) {
 
-        byte[] body = event.getBody();
-        String line = new String(body);
+        String line = new String(event.getBody(), StandardCharsets.UTF_8);
 
         String resultValue = "";
 

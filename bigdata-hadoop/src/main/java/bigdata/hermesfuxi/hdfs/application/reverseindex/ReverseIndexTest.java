@@ -15,6 +15,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,9 +91,8 @@ public class ReverseIndexTest {
 
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException {
-            Set<String> keySet = map.keySet();
-            for (String key : keySet) {
-                context.write(new Text(key), new Text(map.get(key)));
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                context.write(new Text(entry.getKey()), new Text(entry.getValue()));
             }
         }
     }

@@ -6,13 +6,15 @@ import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
  * @author hermesfuxi
+ * desc: 用于事件字段的加密
  */
 public class EventFieldEncryptInterceptor implements Interceptor {
-    private ParseTypeProcessor parseTypeProcessor;
+    private final ParseTypeProcessor parseTypeProcessor;
 
     public EventFieldEncryptInterceptor(ParseTypeProcessor parseTypeProcessor) {
         this.parseTypeProcessor = parseTypeProcessor;
@@ -32,14 +34,13 @@ public class EventFieldEncryptInterceptor implements Interceptor {
      * 假设，我们要采集的数据，格式如下：
      * id,name,timestamp,devicetype,event
      *
-     * @param event
-     * @return
+     * @param event 事件
+     * @return 返回事件
      */
     @Override
     public Event intercept(Event event) {
 
-        byte[] body = event.getBody();
-        String line = new String(body);
+        String line = new String(event.getBody(), StandardCharsets.UTF_8);
 
         String resultValue = "";
 
@@ -51,16 +52,19 @@ public class EventFieldEncryptInterceptor implements Interceptor {
             split[index] = MD5Utils.encrypt(value);
             resultValue = String.join(parseTypeProcessor.getSplitChar(), split);
 
-        }else if("json".equals(parseTypeProcessor.getParseType())) {
-            String indexKey = parseTypeProcessor.getIndexKey();
-            JSONObject jsonObject = JSONObject.parseObject(line);
-            String value = jsonObject.getString(indexKey);
-            jsonObject.put(indexKey, MD5Utils.encrypt(value));
-            resultValue = jsonObject.toJSONString();
+            event.setBody(resultValue.getBytes(StandardCharsets.UTF_8));
+        }else {
+            if("json".equals(parseTypeProcessor.getParseType())) {
+                String indexKey = parseTypeProcessor.getIndexKey();
+                JSONObject jsonObject = JSONObject.parseObject(line);
+                String value = jsonObject.getString(indexKey);
+                jsonObject.put(indexKey, MD5Utils.encrypt(value));
+                resultValue = jsonObject.toJSONString();
+            }
+            event.setBody(resultValue.getBytes(StandardCharsets.UTF_8));
         }
 
         // 将数据放入body
-        event.setBody(resultValue.getBytes());
         return event;
     }
 
@@ -90,7 +94,7 @@ public class EventFieldEncryptInterceptor implements Interceptor {
         ParseTypeProcessor parseTypeProcessor;
         /**
          * flume会调用该方法来创建我们的自定义拦截器对象
-         * @return
+         * @return 拦截器对象实例
          */
         @Override
         public EventFieldEncryptInterceptor build() {

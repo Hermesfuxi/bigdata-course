@@ -3,6 +3,7 @@ package bigdata.hermesfuxi.zookeeper.client;
 
 import org.apache.zookeeper.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class ZKClient {
@@ -14,7 +15,7 @@ public class ZKClient {
 //            return;
 //        }
 
-        String s = zooKeeper.create("/d", "3".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        String s = zooKeeper.create("/d", "3".getBytes(StandardCharsets.UTF_8), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         System.out.println(s);
 
 

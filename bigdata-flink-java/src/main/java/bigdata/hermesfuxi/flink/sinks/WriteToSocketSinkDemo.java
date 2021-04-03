@@ -5,7 +5,7 @@ import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
-public class writeToSocketSinkDemo {
+public class WriteToSocketSinkDemo {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.getExecutionEnvironment();
 
@@ -18,5 +18,11 @@ public class writeToSocketSinkDemo {
         long netRuntime = execute.getNetRuntime();
 
         System.out.println(netRuntime);
+
+
     }
+
+
+
+
 }
