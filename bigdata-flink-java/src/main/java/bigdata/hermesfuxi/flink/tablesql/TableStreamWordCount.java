@@ -3,6 +3,7 @@ package bigdata.hermesfuxi.flink.tablesql;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -16,11 +17,13 @@ import static org.apache.flink.table.api.Expressions.$;
 
 public class TableStreamWordCount {
     public static void main(String[] args) throws Exception {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
-        StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
+        Configuration configuration = new Configuration();
+        configuration.setInteger("rest.port", 22222);
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(configuration);
+        env.setParallelism(1);
 
         DataStreamSource<String> socketTextStream = env.socketTextStream("hadoop-slave3", 8888);
+
         SingleOutputStreamOperator<Tuple2<String, Integer>> wordAndOne = socketTextStream.flatMap(new FlatMapFunction<String, Tuple2<String, Integer>>() {
             @Override
             public void flatMap(String value, Collector<Tuple2<String, Integer>> out) throws Exception {
@@ -31,20 +34,23 @@ public class TableStreamWordCount {
             }
         });
 
-        // DSL 风格
-        Table sourceTable = tableEnv.fromDataStream(wordAndOne, $("word"), $("one"));
-        Table wordCountTable = sourceTable
-                .groupBy($("word"))
-                .select($("word"), $("one").sum().as("sum_cnt"));
+//        wordAndOne.print("wordAndOne");
 
-        // SQL 风格
-//        tableEnv.createTemporaryView("t_word_count", wordAndOne, $("word"), $("one"));
-//        Table t_word_count = tableEnv.sqlQuery("select word, sum(one) as sum_cnt from t_word_count group by word");
+        StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
+        // DSL 风格
+//        Table sourceTable = tableEnv.fromDataStream(wordAndOne, $("word"), $("cnt"));
+//        Table wordCountTable = sourceTable
+//                .groupBy($("word"))
+//                .select($("word"), $("cnt").sum().as("sum_cnt"));
+
+        // SQL 风格: 不能使用 one 作为 字段名
+        tableEnv.createTemporaryView("t_word_count", wordAndOne, $("word"), $("cnt"));
+        Table wordCountTable = tableEnv.sqlQuery("select word, sum(cnt) as sum_cnt from t_word_count group by word");
 
         wordCountTable.printSchema();
 
         // 可更新的数据流
-        // 如果了使用 groupby，table转换为流的时候只能用toRetractDstream
+        // 如果了使用 groupby，table转换为流的时候只能用toRetractDStream
         DataStream<Tuple2<Boolean, Row>> retractStream = tableEnv.toRetractStream(wordCountTable, Row.class);
         retractStream.print();
         // 得到的第一个boolean型字段标识 true就是最新的数据(Insert)，false表示过期老数据(Delete)
