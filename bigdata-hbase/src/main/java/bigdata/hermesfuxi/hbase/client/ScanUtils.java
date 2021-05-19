@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.hive.client;
+package bigdata.hermesfuxi.hbase.client;
 
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
