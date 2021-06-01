@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.flink.sql.windows
+package bigdata.hermesfuxi.flink.tablesql.windows
 
 import java.time.Duration
 
@@ -13,7 +13,7 @@ import org.apache.flink.types.Row
 /**
  * 滑动窗口 sql demo
  */
-object FlinkSQLSlideTime {
+object FlinkSQLSessionTime {
   case class SensorReading(id: String, timestamp: Long, temperature: Double)
 
   def main(args: Array[String]): Unit = {
@@ -45,17 +45,16 @@ object FlinkSQLSlideTime {
     val sensorTable = tableEnv.fromDataStream(dataStream, 'id, 'temperature, 'timestamp.rowtime as 'ts)
 
     val ddlTable = sensorTable
-      .window(Slide over (10.seconds) every (5.seconds) on 'ts as 'tw)
+      .window(Session withGap (10.seconds) on 'ts as 'tw)
       .groupBy('id, 'tw)
       .select('id, 'id.count(), 'tw.`end`())
 
     /*** 其中涉及时间语义如下：
-     * .window(Slide over (10.seconds) every (5.seconds) on 'rowtime as 'w) （事件时间字段 rowtime）
-     * .window(Slide over (10.seconds) every (5.seconds) on 'proctime as 'w)（处理时间字段 proctime）
-     * .window(Slide over (10.rows) every (5.rows) on 'proctime as 'w) (类似于计数窗口，按处理时间排序，10 行一组)
+     * .window(Session withGap (10.seconds) on 'rowtime as 'w) （事件时间字段 rowtime）
+     * .window(Session withGap (10.seconds) on 'proctime as 'w)（处理时间字段 proctime）
+     * .window(Session withGap (10.rows) on 'proctime as 'w) (类似于计数窗口，按处理时间排序，10 行一组)
      */
     ddlTable.toAppendStream[Row].print("ddlTable")
-
 
     tableEnv.createTemporaryView("sensor", sensorTable)
     val sqlTable = tableEnv.sqlQuery(
@@ -63,11 +62,11 @@ object FlinkSQLSlideTime {
         |select
         |id,
         |count(id) ,
-        |HOP_END(ts, interval '5' second, interval '10' second)
+        |SESSION_END(ts,interval '10' second)
         |from sensor
         |group by
         |id,
-        |HOP(ts, interval '5' second, interval '10' second)
+        |SESSION(ts,interval '10' second)
         |""".stripMargin)
 
     sqlTable.toRetractStream[Row].print("sqlTable")

@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.flink.sql.windows
+package bigdata.hermesfuxi.flink.tablesql.windows
 
 import java.time.Duration
 

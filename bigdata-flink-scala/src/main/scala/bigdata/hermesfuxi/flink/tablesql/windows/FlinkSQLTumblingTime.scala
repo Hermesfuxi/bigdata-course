@@ -1,4 +1,4 @@
-package bigdata.hermesfuxi.flink.sql.windows
+package bigdata.hermesfuxi.flink.tablesql.windows
 
 import java.time.Duration
 
@@ -41,7 +41,7 @@ object FlinkSQLTumblingTime {
 
     val tableEnv = StreamTableEnvironment.create(env, settings)
 
-    val sensorTable = tableEnv.fromDataStream(dataStream, 'id, 'temperature, 'timestamp.rowtime as 'ts)
+    val sensorTable: Table = tableEnv.fromDataStream(dataStream, 'id, 'temperature, 'timestamp.rowtime as 'ts)
 
     val ddlTable = sensorTable
       .window(Tumble over (10.seconds) on 'ts as 'tw)
