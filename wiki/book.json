@@ -1,0 +1,76 @@
+{
+  "title": "spark 教程",
+  "description": "基于 spark 讲解的专栏，涉及入门、概念、原理、实战、性能调优、系统案例的讲解",
+  "author": "hermesfuxi",
+  "output.name": "site",
+  "language": "zh-hans",
+  "gitbook": "3.2.3",
+  "root": ".",
+  "plugins": [
+    "-lunr",
+    "-search",
+    "-sharing",
+    "-default-theme",
+    "search-pro",
+    "theme-comscore",
+    "splitter",
+    "tbfed-pagefooter",
+    "expandable-chapters",
+    "hide-element",
+    "custom-favicon",
+    "-highlight",
+    "prism",
+    "prism-themes",
+    "code",
+    "sectionx",
+    "flexible-alerts",
+    "ancre-navigation"
+  ],
+
+  "pluginsConfig": {
+    "tbfed-pagefooter": {
+      "copyright":"hermesfuxi",
+      "modify_label": "该文件修订时间：",
+      "modify_format": "YYYY-MM-DD HH:mm:ss"
+    },
+
+    "hide-element": {
+      "elements": [".gitbook-link"]
+    },
+
+    "favicon": "favicon.ico",
+
+    "pdf": {
+      "pageNumbers": true,
+      "fontFamily": "Arial",
+      "fontSize": 12,
+      "paperSize": "a4",
+      "margin": {
+        "right": 62,
+        "left": 62,
+        "top": 56,
+        "bottom": 56
+      }
+    },
+    "page-toc-button": {
+      "maxTocDepth": 2,
+      "minTocSize": 2
+    },
+    "prism":{
+      "css":[
+        "prism-themes/themes/prism-darcula.css"
+      ]
+    },
+    "sectionx": {
+      "tag": "b"
+    }
+  },
+
+  "styles": {
+    "website": "styles/website.css",
+    "ebook": "styles/ebook.css",
+    "pdf": "styles/pdf.css",
+    "mobi": "styles/mobi.css",
+    "epub": "styles/epub.css"
+  }
+}

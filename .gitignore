@@ -1,0 +1,11 @@
+.idea
+
+target/
+
+pom.xml.*
+release.properties
+buildNumber.properties
+.mvn
+
+*.iml
+*.log
